@@ -2,20 +2,32 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 
 public class Solver {
 
+    private ArrayList<Board> log;
+
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
+        if (initial == null) {
+            throw new IllegalArgumentException("initial board is null");
+        }
 
-
+        // create a list to store each dequeued board
+        log = new ArrayList<>();
+        // create the PQ
         MinPQ<SearchNode> PQ = new MinPQ<>(new SearchNodeComparator());
+
+        // step 0
         PQ.insert(new SearchNode(initial, 0, null));
         SearchNode curr = PQ.delMin();
+        // System.out.println(curr.board.debugString());
+        log.add(curr.board);
 
         int step = 0;
-        while (!curr.board.isGoal() && step < 5) {
+        while (!curr.board.isGoal() && step < 10) {
             step += 1;
             for (Board neighbour : curr.board.neighbors()) {
                 SearchNode newNode = new SearchNode(neighbour, curr.moves + 1, curr);
@@ -27,15 +39,15 @@ public class Solver {
                 }
             }
 
-            System.out.println("Step:" + step);
+            // System.out.println("Step:" + step);
             for (SearchNode n : PQ) {
                 // System.out.println(n.board.debugString());
-                n.printInfo();
+                // n.printInfo();
             }
-            System.out.println("Dequed is....");
+            // System.out.println("Dequed is....");
             curr = PQ.delMin();
-            curr.printInfo();
-
+            log.add(curr.board);
+            // curr.printInfo();
         }
 
     }
@@ -49,11 +61,13 @@ public class Solver {
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
+        // todo
         return true;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
+        // todo
         if (!isSolvable()) {
             return -1;
         }
@@ -65,7 +79,7 @@ public class Solver {
         if (!isSolvable()) {
             return null;
         }
-        return null;
+        return log;
     }
 
 
@@ -100,7 +114,6 @@ public class Solver {
         }
 
         public void printInfo() {
-
             System.out.println("Priority:" + this.getPriority());
             System.out.println("Manhattam:" + this.board.manhattan());
             System.out.println(this.board.debugString());
@@ -126,6 +139,15 @@ public class Solver {
         Board initial = new Board(tiles);
         Solver solver = new Solver(initial);
         StdOut.println(filename + ": " + solver.moves());
+
+        // print solution to standard output
+        if (!solver.isSolvable())
+            StdOut.println("No solution possible");
+        else {
+            StdOut.println("Minimum number of moves = " + solver.moves());
+            for (Board board : solver.solution())
+                StdOut.println(board);
+        }
     }
 
 

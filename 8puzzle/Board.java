@@ -26,7 +26,7 @@ public class Board implements Iterable<Board> {
         for (int i = 0; i < this.size; i++) {
             for (int j = 0; j < this.size; j++) {
                 goal[i][j] = count++;
-                if (count == this.size * this.size) {
+                if (count == this.size * this.size + 1) {
                     goal[i][j] = 0;
                     this.goal = goal;
                 }
@@ -216,16 +216,16 @@ public class Board implements Iterable<Board> {
 
     public static void main(String[] args) {
         int[][] twoDArray = {
-                { 4, 1, 3 },
-                { 0, 2, 5 },
-                { 7, 8, 6 }
+                { 1, 2, 3 },
+                { 4, 5, 6 },
+                { 7, 8, 0 }
         };
         Board b = new Board(twoDArray);
         // for (Board neighbour : b.neighbors()) {
         // System.out.println(neighbour.toString());
         // }
 
-        System.out.println(b.manhattan());
+        System.out.println(b.isGoal());
     }
 
 
