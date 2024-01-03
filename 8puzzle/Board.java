@@ -11,11 +11,7 @@ import java.util.NoSuchElementException;
 public class Board implements Iterable<Board> {
 
     private int[][] tiles;
-    private Integer[][] goal = {
-            { 1, 2, 3 },
-            { 4, 5, 6 },
-            { 7, 8, 0 }
-    };
+    private int[][] goal;
     private int size;
 
     // create a board from an n-by-n array of tiles,
@@ -23,6 +19,19 @@ public class Board implements Iterable<Board> {
     public Board(int[][] tiles) {
         this.tiles = tiles;
         this.size = tiles.length;
+
+        int[][] goal = new int[this.size][this.size];
+        int count = 1;
+
+        for (int i = 0; i < this.size; i++) {
+            for (int j = 0; j < this.size; j++) {
+                goal[i][j] = count++;
+                if (count == this.size * this.size) {
+                    goal[i][j] = 0;
+                    this.goal = goal;
+                }
+            }
+        }
     }
 
     // string representation of this board
@@ -30,6 +39,25 @@ public class Board implements Iterable<Board> {
         StringBuilder result = new StringBuilder();
 
         result.append(this.size).append("\n");
+
+        for (int row = 0; row < this.size; row++) {
+            for (int col = 0; col < this.size; col++) {
+                result.append(this.tiles[row][col]);
+
+                // Append space only if it's not the last element in the row
+                if (col < this.size - 1) {
+                    result.append(" ");
+                }
+            }
+
+            result.append("\n");
+        }
+
+        return result.toString();
+    }
+
+    public String debugString() {
+        StringBuilder result = new StringBuilder();
 
         for (int row = 0; row < this.size; row++) {
             for (int col = 0; col < this.size; col++) {
@@ -68,13 +96,17 @@ public class Board implements Iterable<Board> {
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
         int distance = 0;
+        int expected_row;
+        int expected_col;
 
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
                 int target = this.tiles[row][col];
-                int expected_row = target / this.size;
-                int expected_col = target % this.size;
-                distance += expected_row + expected_col - row - col;
+                if (target != 0) {
+                    expected_row = target / this.size;
+                    expected_col = (target - 1) % this.size;
+                    distance += Math.abs(expected_row - row) + Math.abs(expected_col - col);
+                }
             }
         }
         return distance;
@@ -184,15 +216,16 @@ public class Board implements Iterable<Board> {
 
     public static void main(String[] args) {
         int[][] twoDArray = {
-                { 1, 0, 3 },
-                { 4, 5, 6 },
-                { 7, 8, 2 }
+                { 4, 1, 3 },
+                { 0, 2, 5 },
+                { 7, 8, 6 }
         };
         Board b = new Board(twoDArray);
-        for (Board neighbour : b.neighbors()) {
-            System.out.println(neighbour.toString());
+        // for (Board neighbour : b.neighbors()) {
+        // System.out.println(neighbour.toString());
+        // }
 
-        }
+        System.out.println(b.manhattan());
     }
 
 
