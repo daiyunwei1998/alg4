@@ -5,10 +5,9 @@
  **************************************************************************** */
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.Arrays;
 
-public class Board implements Iterable<Board> {
+public class Board {
 
     private int[][] tiles;
     private int[][] goal;
@@ -17,7 +16,7 @@ public class Board implements Iterable<Board> {
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
-        this.tiles = tiles;
+        this.tiles = deepCopy(tiles); // create a copy, making board immutable
         this.size = tiles.length;
 
         int[][] goal = new int[this.size][this.size];
@@ -56,7 +55,7 @@ public class Board implements Iterable<Board> {
         return result.toString();
     }
 
-    public String debugString() {
+    private String debugString() {
         StringBuilder result = new StringBuilder();
 
         for (int row = 0; row < this.size; row++) {
@@ -86,7 +85,9 @@ public class Board implements Iterable<Board> {
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
                 if (this.tiles[row][col] != this.goal[row][col]) {
-                    distance += 1;
+                    if (this.tiles[row][col] != 0) {
+                        distance += 1;
+                    }
                 }
             }
         }
@@ -103,7 +104,7 @@ public class Board implements Iterable<Board> {
             for (int col = 0; col < this.size; col += 1) {
                 int target = this.tiles[row][col];
                 if (target != 0) {
-                    expected_row = target / this.size;
+                    expected_row = (target - 1) / this.size;
                     expected_col = (target - 1) % this.size;
                     distance += Math.abs(expected_row - row) + Math.abs(expected_col - col);
                 }
@@ -112,120 +113,161 @@ public class Board implements Iterable<Board> {
         return distance;
     }
 
+
     // is this board the goal board?
     public boolean isGoal() {
         return this.hamming() == 0;
     }
 
     // does this board equal y?
-    public boolean equals(Board y) {
-        // check size
-        if (this.dimension() != y.dimension()) {
+    public boolean equals(Object obj) {
+        // Check if the object is the same reference
+        if (this == obj) {
+            return true;
+        }
+
+        // Check if the object is null
+        if (obj == null) {
             return false;
         }
 
-        for (int row = 0; row < this.size; row += 1) {
-            for (int col = 0; col < this.size; col += 1) {
-                if (this.tiles[row][col] != y.tiles[row][col]) {
+        // Check if the classes are the same
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        // Cast the object to Board
+        Board otherBoard = (Board) obj;
+
+        // Check size
+        if (this.dimension() != otherBoard.dimension()) {
+            return false;
+        }
+
+        // Compare contents
+        for (int row = 0; row < this.size; row++) {
+            for (int col = 0; col < this.size; col++) {
+                if (this.tiles[row][col] != otherBoard.tiles[row][col]) {
                     return false;
                 }
             }
         }
+
         return true;
     }
 
+
     // all neighboring boards
-    Iterable<Board> neighbors() {
-        return new NeighborsIterable();
-    }
+    public Iterable<Board> neighbors() {
+        int[][] newTiles;
+        ArrayList<Board> neighborsList = new ArrayList<>();
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if (this.tiles[row][col] == 0) {
 
-    public Iterator<Board> iterator() {
-        return new NeighborsIterable().iterator();
-    }
-
-    // Define an iterator for the neighbors
-    private class NeighborsIterable implements Iterable<Board>, Iterator<Board> {
-        private ArrayList<int[]> neighbourList;
-        private int[][] current; // current board state
-        private int zeroRow;
-        private int zeroCol;
-
-        // Constructor to initialize the neighborList
-        public NeighborsIterable() {
-            this.neighbourList = new ArrayList<>();
-            for (int row = 0; row < tiles.length; row++) {
-                for (int col = 0; col < tiles.length; col++) {
-                    if (tiles[row][col] == 0) {
-                        this.zeroRow = row;
-                        this.zeroCol = col;
-                        if (row > 0) {
-                            neighbourList.add(new int[] { row - 1, col });
-                        }
-                        if (row < tiles.length - 1) {
-                            neighbourList.add(new int[] { row + 1, col });
-                        }
-                        if (col > 0) {
-                            neighbourList.add(new int[] { row, col - 1 });
-                        }
-                        if (col < tiles.length - 1) {
-                            neighbourList.add(new int[] { row, col + 1 });
-                        }
+                    if (row > 0) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row - 1][col];
+                        newTiles[row][col] = targetNumber;
+                        newTiles[row - 1][col] = 0;
+                        neighborsList.add(new Board(newTiles));
+                    }
+                    if (row < size - 1) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row + 1][col];
+                        newTiles[row][col] = targetNumber;
+                        newTiles[row + 1][col] = 0;
+                        neighborsList.add(new Board(newTiles));
+                    }
+                    if (col > 0) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row][col - 1];
+                        newTiles[row][col] = targetNumber;
+                        newTiles[row][col - 1] = 0;
+                        neighborsList.add(new Board(newTiles));
+                    }
+                    if (col < size - 1) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row][col + 1];
+                        newTiles[row][col] = targetNumber;
+                        newTiles[row][col + 1] = 0;
+                        neighborsList.add(new Board(newTiles));
                     }
                 }
             }
         }
 
-        // Implement the iterator() method from Iterable interface
-        @Override
-        public Iterator<Board> iterator() {
-            // Reset any necessary iterator variables
-            // (if needed based on your implementation)
-            return this;
+        return neighborsList;
+    }
+
+    // Helper method to create a deep copy of a 2D array
+    private int[][] deepCopy(int[][] original) {
+        int[][] copy = new int[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            copy[i] = Arrays.copyOf(original[i], original[i].length);
         }
-
-        // Implement the hasNext() method from Iterator interface
-        @Override
-        public boolean hasNext() {
-            return this.neighbourList.size() > 0;
-        }
-
-        // Implement the next() method from Iterator interface
-        @Override
-        public Board next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-
-            int[][] newTiles = new int[size][size];
-            for (int i = 0; i < size; i++) {
-                System.arraycopy(tiles[i], 0, newTiles[i], 0, size);
-            }
-
-            int[] cord = this.neighbourList.remove(0);
-            int targetNumber = newTiles[cord[0]][cord[1]];
-            newTiles[zeroRow][zeroCol] = targetNumber;
-            newTiles[cord[0]][cord[1]] = 0;
-
-            return new Board(newTiles);
-        }
+        return copy;
     }
 
     // a board that is obtained by exchanging any pair of tiles
-    // public Board twin()
+    public Board twin() {
+        int[][] newTiles;
+        ArrayList<Board> neighborsList = new ArrayList<>();
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if (this.tiles[row][col] != 0) {
+
+                    if (row > 0 && this.tiles[row - 1][col] != 0) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row - 1][col];
+                        newTiles[row - 1][col] = newTiles[row][col];
+                        newTiles[row][col] = targetNumber;
+                        return new Board(newTiles);
+                    }
+                    if (row < size - 1 && this.tiles[row + 1][col] != 0) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row + 1][col];
+                        newTiles[row + 1][col] = newTiles[row][col];
+                        newTiles[row][col] = targetNumber;
+                        return new Board(newTiles);
+
+                    }
+                    if (col > 0 && this.tiles[row][col - 1] != 0) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row][col - 1];
+                        newTiles[row][col - 1] = newTiles[row][col];
+                        newTiles[row][col] = targetNumber;
+                        return new Board(newTiles);
+                    }
+                    if (col < size - 1 && this.tiles[row][col + 1] != 0) {
+                        newTiles = deepCopy(tiles);
+                        int targetNumber = newTiles[row][col + 1];
+                        newTiles[row][col + 1] = newTiles[row][col];
+                        newTiles[row][col] = targetNumber;
+                        return new Board(newTiles);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
 
     public static void main(String[] args) {
-        int[][] twoDArray = {
-                { 1, 2, 3 },
-                { 4, 5, 6 },
-                { 7, 8, 0 }
-        };
-        Board b = new Board(twoDArray);
-        // for (Board neighbour : b.neighbors()) {
-        // System.out.println(neighbour.toString());
-        // }
 
-        System.out.println(b.isGoal());
+        int[][] tiles = {
+                { 1, 5, 2 },
+                { 7, 0, 4 },
+                { 8, 6, 3 }
+        };
+
+        Board b = new Board(tiles);
+
+        System.out.println(b.manhattan());
+        for (Board neighbour : b.neighbors()) {
+            System.out.println(neighbour.toString());
+        }
+
     }
 
 
