@@ -12,6 +12,7 @@ public class Board {
 
     private char[][] tiles;
     private int size;
+    private int manhattan = -1;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
@@ -112,6 +113,7 @@ public class Board {
                 }
             }
         }
+        this.manhattan = distance;
         return distance;
     }
 

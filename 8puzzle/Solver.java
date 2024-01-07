@@ -80,7 +80,7 @@ public class Solver {
         public int compare(SearchNode s1, SearchNode s2) {
             int priorityCompare = s1.compareTo(s2);
             if (priorityCompare == 0) {
-                int manhattanCompare = Integer.compare(s1.board.manhattan(), s2.board.manhattan());
+                int manhattanCompare = Integer.compare(s1.distance, s2.distance);
                 return manhattanCompare;
             }
             return priorityCompare;
