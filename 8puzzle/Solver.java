@@ -3,32 +3,36 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 
 public class Solver {
 
-    private ArrayList<Board> log;
     private Stack<Board> pathToGoal;
+    private boolean solvable;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) {
             throw new IllegalArgumentException("initial board is null");
         }
+        this.solvable = true;
 
-        // create a list to store each dequeued board
-        log = new ArrayList<>();
         // create the PQ
         MinPQ<SearchNode> PQ = new MinPQ<>(new SearchNodeComparator());
+        MinPQ<SearchNode> PQTwin = new MinPQ<>(new SearchNodeComparator());
 
-        // step 0
+        // step 0: initial search Node
         PQ.insert(new SearchNode(initial, 0, null));
-        SearchNode curr = PQ.delMin();
-        log.add(curr.getBoard());
+        // step 0: initial search Node for twin
+        PQTwin.insert(new SearchNode(initial.twin(), 0, null));
 
-        int step = 0;
+        // deque first board
+        SearchNode curr = PQ.delMin();
+        SearchNode currTwin = PQTwin.delMin();
+
+
         while (!curr.getBoard().isGoal()) {
+
 
             for (Board neighbour : curr.getBoard().neighbors()) {
                 SearchNode newNode = new SearchNode(neighbour, curr.getMoves() + 1, curr);
@@ -40,23 +44,31 @@ public class Solver {
                 }
             }
 
+            for (Board neighbourTwin : currTwin.getBoard().neighbors()) {
+                SearchNode newNode = new SearchNode(neighbourTwin, currTwin.getMoves() + 1,
+                                                    currTwin);
+                if (currTwin.getPrev() != null && !currTwin.getPrev().getBoard()
+                                                           .equals(neighbourTwin)) {
+                    PQTwin.insert(newNode);
+                }
+                else if (currTwin.getPrev() == null) {
+                    PQTwin.insert(newNode);
+                }
+            }
 
-            // System.out.println("Step:" + step);
-
-            // System.out.println("PQ for step" + step);
-            // printPQ(PQ);
-            // System.out.println("Dequed is....");
             curr = PQ.delMin();
-            step += 1;
-            // System.out.println(curr.getBoard().debugString());
+            currTwin = PQTwin.delMin();
 
+            if (currTwin.getBoard().isGoal()) {
+                this.solvable = false;
+                return;
+            }
 
-            log.add(curr.getBoard());
         }
 
         this.pathToGoal = new Stack<>();
 
-        while (curr.prev != null) {
+        while (curr != null) {
             this.pathToGoal.push(curr.getBoard());
             curr = curr.prev;
         }
@@ -77,8 +89,7 @@ public class Solver {
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        // todo
-        return true;
+        return solvable;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
@@ -86,7 +97,7 @@ public class Solver {
         if (!isSolvable()) {
             return -1;
         }
-        return pathToGoal.size();
+        return pathToGoal.size() - 1; // disregarding the initial state
     }
 
     // sequence of boards in a shortest solution; null if unsolvable
@@ -106,11 +117,13 @@ public class Solver {
         private int moves; // the number of moves made to reach the board
         private SearchNode prev;
         private int priority;
+        private int distance;
 
         SearchNode(Board board, int moves, SearchNode prev) {
             this.board = board;
             this.moves = moves;
             this.prev = prev;
+            this.distance = board.manhattan();
             this.priority = ManhattanPriority();
         }
 
@@ -119,7 +132,7 @@ public class Solver {
         }
 
         private int ManhattanPriority() {
-            return board.manhattan() + moves;
+            return this.distance + moves;
         }
 
         public int getPriority() {
@@ -143,12 +156,6 @@ public class Solver {
             return Integer.compare(this.getPriority(), o.getPriority());
         }
 
-        private void printInfo() {
-            System.out.println("Priority:" + this.getPriority());
-            System.out.println("moves:" + this.moves);
-            System.out.println("Manhattam:" + this.board.manhattan());
-            // System.out.println(this.board.debugString());
-        }
     }
 
 
@@ -187,7 +194,7 @@ public class Solver {
     public static void main(String[] args) {
 
 
-        String filename = "puzzle39.txt";
+        String filename = "puzzle02.txt";
         // read in the board specified in the filename
         In in = new In(filename);
         int n = in.readInt();

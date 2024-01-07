@@ -4,34 +4,33 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.In;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Board {
 
-    private int[][] tiles;
-    private int[][] goal;
+    private char[][] tiles;
     private int size;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
-        this.tiles = deepCopy(tiles); // create a copy, making board immutable
+        this.tiles = int2charCopy(tiles); // create a copy, making board immutable
         this.size = tiles.length;
+    }
 
-        int[][] goal = new int[this.size][this.size];
-        int count = 1;
 
-        for (int i = 0; i < this.size; i++) {
-            for (int j = 0; j < this.size; j++) {
-                goal[i][j] = count++;
-                if (count == this.size * this.size + 1) {
-                    goal[i][j] = 0;
-                    this.goal = goal;
-                }
+    private char[][] int2charCopy(int[][] original) {
+        char[][] copy = new char[original.length][original.length];
+        for (int i = 0; i < original.length; i++) {
+            for (int j = 0; j < original.length; j++) {
+                copy[i][j] = (char) original[i][j];
             }
         }
+        return copy;
     }
+
 
     // string representation of this board
     public String toString() {
@@ -41,7 +40,8 @@ public class Board {
 
         for (int row = 0; row < this.size; row++) {
             for (int col = 0; col < this.size; col++) {
-                result.append(this.tiles[row][col]);
+                // result.append(this.tiles[row][col]);
+                result.append(String.format("%2d", (int) this.tiles[row][col]));
 
                 // Append space only if it's not the last element in the row
                 if (col < this.size - 1) {
@@ -54,6 +54,7 @@ public class Board {
 
         return result.toString();
     }
+
 
     private String debugString() {
         StringBuilder result = new StringBuilder();
@@ -84,10 +85,11 @@ public class Board {
         int distance = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
-                if (this.tiles[row][col] != this.goal[row][col]) {
-                    if (this.tiles[row][col] != 0) {
+                if ((int) this.tiles[row][col] != row * this.size + col + 1) {
+                    if ((int) this.tiles[row][col] != 0) {
                         distance += 1;
                     }
+
                 }
             }
         }
@@ -166,28 +168,28 @@ public class Board {
                 if (this.tiles[row][col] == 0) {
 
                     if (row > 0) {
-                        newTiles = deepCopy(tiles);
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row - 1][col];
                         newTiles[row][col] = targetNumber;
                         newTiles[row - 1][col] = 0;
                         neighborsList.add(new Board(newTiles));
                     }
                     if (row < size - 1) {
-                        newTiles = deepCopy(tiles);
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row + 1][col];
                         newTiles[row][col] = targetNumber;
                         newTiles[row + 1][col] = 0;
                         neighborsList.add(new Board(newTiles));
                     }
                     if (col > 0) {
-                        newTiles = deepCopy(tiles);
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row][col - 1];
                         newTiles[row][col] = targetNumber;
                         newTiles[row][col - 1] = 0;
                         neighborsList.add(new Board(newTiles));
                     }
                     if (col < size - 1) {
-                        newTiles = deepCopy(tiles);
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row][col + 1];
                         newTiles[row][col] = targetNumber;
                         newTiles[row][col + 1] = 0;
@@ -200,11 +202,33 @@ public class Board {
         return neighborsList;
     }
 
-    // Helper method to create a deep copy of a 2D array
-    private int[][] deepCopy(int[][] original) {
-        int[][] copy = new int[original.length][];
+    private int[][] char2intCopy(char[][] original) {
+        int[][] copy = new int[original.length][original.length];
         for (int i = 0; i < original.length; i++) {
-            copy[i] = Arrays.copyOf(original[i], original[i].length);
+            for (int j = 0; j < original.length; j++) {
+                copy[i][j] = (int) original[i][j];
+            }
+        }
+        return copy;
+    }
+
+    // Helper method to create a deep copy of a 2D array
+    private char[][] deepCopy(char[][] original) {
+        char[][] copy = new char[original.length][original.length];
+        for (int i = 0; i < original.length; i++) {
+            for (int j = 0; j < original.length; j++) {
+                copy[i][j] = original[i][j];
+            }
+        }
+        return copy;
+    }
+
+    private int[][] deepCopy(int[][] original) {
+        int[][] copy = new int[original.length][original.length];
+        for (int i = 0; i < original.length; i++) {
+            for (int j = 0; j < original.length; j++) {
+                copy[i][j] = original[i][j];
+            }
         }
         return copy;
     }
@@ -212,35 +236,35 @@ public class Board {
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
         int[][] newTiles;
-        ArrayList<Board> neighborsList = new ArrayList<>();
+        // ArrayList<Board> neighborsList = new ArrayList<>();
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
-                if (this.tiles[row][col] != 0) {
+                if ((int) this.tiles[row][col] != 0) {
 
-                    if (row > 0 && this.tiles[row - 1][col] != 0) {
-                        newTiles = deepCopy(tiles);
+                    if (row > 0 && (int) this.tiles[row - 1][col] != 0) {
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row - 1][col];
                         newTiles[row - 1][col] = newTiles[row][col];
                         newTiles[row][col] = targetNumber;
                         return new Board(newTiles);
                     }
-                    if (row < size - 1 && this.tiles[row + 1][col] != 0) {
-                        newTiles = deepCopy(tiles);
+                    if (row < size - 1 && (int) this.tiles[row + 1][col] != 0) {
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row + 1][col];
                         newTiles[row + 1][col] = newTiles[row][col];
                         newTiles[row][col] = targetNumber;
                         return new Board(newTiles);
 
                     }
-                    if (col > 0 && this.tiles[row][col - 1] != 0) {
-                        newTiles = deepCopy(tiles);
+                    if (col > 0 && (int) this.tiles[row][col - 1] != 0) {
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row][col - 1];
                         newTiles[row][col - 1] = newTiles[row][col];
                         newTiles[row][col] = targetNumber;
                         return new Board(newTiles);
                     }
-                    if (col < size - 1 && this.tiles[row][col + 1] != 0) {
-                        newTiles = deepCopy(tiles);
+                    if (col < size - 1 && (int) this.tiles[row][col + 1] != 0) {
+                        newTiles = char2intCopy(tiles);
                         int targetNumber = newTiles[row][col + 1];
                         newTiles[row][col + 1] = newTiles[row][col];
                         newTiles[row][col] = targetNumber;
@@ -255,17 +279,24 @@ public class Board {
 
     public static void main(String[] args) {
 
-        int[][] tiles = {
-                { 1, 5, 2 },
-                { 7, 0, 4 },
-                { 8, 6, 3 }
-        };
+        String filename = "puzzle04.txt";
+        // read in the board specified in the filename
+        In in = new In(filename);
+        int n = in.readInt();
+        int[][] tiles = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                tiles[i][j] = in.readInt();
+            }
+        }
+
 
         Board b = new Board(tiles);
+        System.out.println(b.toString());
 
-        System.out.println(b.manhattan());
+        System.out.println(b.hamming());
         for (Board neighbour : b.neighbors()) {
-            System.out.println(neighbour.toString());
+            // System.out.println(neighbour);
         }
 
     }

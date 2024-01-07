@@ -93,7 +93,7 @@
     &quot;last_opened_file_path&quot;: &quot;C:/Users/daiyu/Desktop/alg4/8puzzle&quot;
   }
 }</component>
-  <component name="RunManager" selected="Application.Solver">
+  <component name="RunManager" selected="Application.test">
     <configuration name="Board" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Board" />
       <module name="Algorithms, Part I" />
@@ -115,10 +115,18 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="test" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="test" />
+      <module name="Algorithms, Part I" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Solver" />
+        <item itemvalue="Application.test" />
         <item itemvalue="Application.Board" />
+        <item itemvalue="Application.Solver" />
         <item itemvalue="Application.PuzzleChecker" />
       </list>
     </recent_temporary>
