@@ -50,20 +50,20 @@ public class RangeSearchVisualizer {
         while (true) {
 
             // user starts to drag a rectangle
-            if (StdDraw.isMousePressed() && !isDragging) {
+            if (StdDraw.mousePressed() && !isDragging) {
                 x0 = x1 = StdDraw.mouseX();
                 y0 = y1 = StdDraw.mouseY();
                 isDragging = true;
             }
 
             // user is dragging a rectangle
-            else if (StdDraw.isMousePressed() && isDragging) {
+            else if (StdDraw.mousePressed() && isDragging) {
                 x1 = StdDraw.mouseX();
                 y1 = StdDraw.mouseY();
             }
 
             // user stops dragging rectangle
-            else if (!StdDraw.isMousePressed() && isDragging) {
+            else if (!StdDraw.mousePressed() && isDragging) {
                 isDragging = false;
             }
 
