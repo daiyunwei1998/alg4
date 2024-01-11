@@ -36,6 +36,9 @@ public class PointSET {
     }
 
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("point is null!");
+        }
         // does the set contain point p?
         return this.set.contains(p);
     }

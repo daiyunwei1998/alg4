@@ -92,7 +92,14 @@
     "last_opened_file_path": "C:/Users/daiyu/Desktop/alg4/kdtree"
   }
 }]]></component>
-  <component name="RunManager" selected="Application.KdTreeGenerator">
+  <component name="RunManager" selected="Application.KdTree">
+    <configuration name="KdTree" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="KdTree" />
+      <module name="Algorithms, Part I" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="KdTreeGenerator" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="KdTreeGenerator" />
       <module name="Algorithms, Part I" />
@@ -123,6 +130,7 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.KdTree" />
       <item itemvalue="Application.KdTreeGenerator" />
       <item itemvalue="Application.KdTreeVisualizer" />
       <item itemvalue="Application.NearestNeighborVisualizer" />
@@ -130,9 +138,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.KdTree" />
+        <item itemvalue="Application.KdTreeVisualizer" />
         <item itemvalue="Application.KdTreeGenerator" />
         <item itemvalue="Application.RangeSearchVisualizer" />
-        <item itemvalue="Application.KdTreeVisualizer" />
         <item itemvalue="Application.NearestNeighborVisualizer" />
       </list>
     </recent_temporary>
