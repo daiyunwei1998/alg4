@@ -123,6 +123,9 @@ public class KdTree {
 
 
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("null point");
+        }
         // Does the set contain point p?
         Node curr = this.root;
         while (curr != null) {
@@ -189,12 +192,13 @@ public class KdTree {
         if (this.isEmpty()) {
             return null;
         }
-        return findNear(root, p, root.p.distanceSquaredTo(p), root.p);
+        return findNear(root, p, root.p);
 
     }
 
-    private Point2D findNear(Node n, Point2D p, double min, Point2D NearestPoint) {
+    private Point2D findNear(Node n, Point2D p, Point2D NearestPoint) {
         boolean isXLevel = n.level % 2 == 0;
+        double min = p.distanceSquaredTo(NearestPoint);
 
         Node firstSubtree = (isXLevel && p.x() <= n.p.x()) || (!isXLevel && p.y() <= n.p.y())
                             ? n.left
@@ -203,9 +207,6 @@ public class KdTree {
         Node secondSubtree = (isXLevel && p.x() > n.p.x()) || (!isXLevel && p.y() > n.p.y())
                              ? n.left
                              : n.right;
-
-        double rectDistance = isXLevel
-                              ? Math.pow(n.p.x() - p.x(), 2) : Math.pow(n.p.y() - p.y(), 2);
 
         // update min
         if (p.distanceSquaredTo(n.p) < min) {
@@ -216,31 +217,27 @@ public class KdTree {
         System.out.println(
                 "checking point " + n.p.x() + " " + n.p.y() + " distance:" + p.distanceSquaredTo(
                         n.p));
-        if (firstSubtree != null) {
-            NearestPoint = findNear(firstSubtree, p, min, NearestPoint);
+        if (firstSubtree != null && firstSubtree.rect.distanceSquaredTo(p) < min) {
+            NearestPoint = findNear(firstSubtree, p, NearestPoint);
         }
-        if (secondSubtree != null && rectDistance < min) {
-            NearestPoint = findNear(secondSubtree, p, min, NearestPoint);
+        if (secondSubtree != null && secondSubtree.rect.distanceSquaredTo(p) < min) {
+            NearestPoint = findNear(secondSubtree, p, NearestPoint);
         }
         return NearestPoint;
     }
 
     public static void main(String[] args) {
         KdTree tree = new KdTree();
-        tree.insert(new Point2D(0.372, 0.497));
-        tree.insert(new Point2D(0.564, 0.413));
-        tree.insert(new Point2D(0.226, 0.577));
-        tree.insert(new Point2D(0.144, 0.179));
-        tree.insert(new Point2D(0.083, 0.51));
-        tree.insert(new Point2D(0.32, 0.708));
-        tree.insert(new Point2D(0.417, 0.362));
-        tree.insert(new Point2D(0.862, 0.825));
-        tree.insert(new Point2D(0.785, 0.725));
-        tree.insert(new Point2D(0.499, 0.208));
+        tree.insert(new Point2D(0.7, 0.2));
+        tree.insert(new Point2D(0.5, 0.4));
+        tree.insert(new Point2D(0.2, 0.3));
+        tree.insert(new Point2D(0.4, 0.7));
+        tree.insert(new Point2D(0.9, 0.6));
 
-        // for (Point2D p : tree.range(new RectHV(0, 0, 1, 1))) {
-        //   System.out.println(p.x() + " " + p.y());
-        //}
-        Point2D p = tree.nearest(new Point2D(0.031, 0.619));
+        for (Point2D p : tree.range(new RectHV(0, 0, 1, 1))) {
+            System.out.println(p.x() + " " + p.y());
+        }
+        Point2D p = tree.nearest(new Point2D(0.36, 0.01));
+        // System.out.println(p.x());
     }
 }
