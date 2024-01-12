@@ -184,6 +184,31 @@ public class KdTree {
         }
     }
 
+  /*  public Iterable<Node> debug(RectHV rect) { // todo delte
+        if (rect == null) {
+            throw new IllegalArgumentException("rect is null");
+        }
+        // All points that are inside the rectangle (or on the boundary)
+        ArrayList<Node> list = new ArrayList<>();
+        debugSearch(root, rect, list);
+        return list;
+    }
+
+    private void debugSearch(Node n, RectHV rect, ArrayList<Node> list) { // todo delte
+        if (n == null) {
+            return;
+        }
+        if (rect.contains(n.p)) {
+            list.add(n);
+        }
+        if (n.left != null && n.left.rect.intersects(rect)) {
+            debugSearch(n.left, rect, list);
+        }
+        if (n.right != null && n.right.rect.intersects(rect)) {
+            debugSearch(n.right, rect, list);
+        }
+    }*/
+
     public Point2D nearest(Point2D p) {
         if (p == null) {
             throw new IllegalArgumentException("null argument");
@@ -198,8 +223,21 @@ public class KdTree {
 
     private Point2D findNear(Node n, Point2D p, Point2D NearestPoint) {
         boolean isXLevel = n.level % 2 == 0;
-        double min = p.distanceSquaredTo(NearestPoint);
 
+        // todo delete
+  /*      System.out.println(
+                "checking point " + n.p.x() + " " + n.p.y() + " distance:" + p.distanceSquaredTo(
+                        n.p));
+*/
+        // update min
+        if (p.distanceSquaredTo(n.p) < p.distanceSquaredTo(NearestPoint)) {
+            NearestPoint = n.p;
+            /*  System.out.println("Min updated to be " + min + " with point " + n.p.x());*/
+        }
+
+        /*the closest point found while exploring the first subtree may
+        enable pruning of the second subtree.
+        => update min before checking subtrees!!  */
         Node firstSubtree = (isXLevel && p.x() <= n.p.x()) || (!isXLevel && p.y() <= n.p.y())
                             ? n.left
                             : n.right;
@@ -208,20 +246,29 @@ public class KdTree {
                              ? n.left
                              : n.right;
 
-        // update min
-        if (p.distanceSquaredTo(n.p) < min) {
-            NearestPoint = n.p;
-            min = p.distanceSquaredTo(n.p);
-        }
-        // todo delete
-        System.out.println(
-                "checking point " + n.p.x() + " " + n.p.y() + " distance:" + p.distanceSquaredTo(
-                        n.p));
-        if (firstSubtree != null && firstSubtree.rect.distanceSquaredTo(p) < min) {
+
+        if (firstSubtree != null && firstSubtree.rect.distanceSquaredTo(p) < p.distanceSquaredTo(
+                NearestPoint)) {
+     /*       System.out.println(
+                    "checking 1subtree because rect dist is " + firstSubtree.rect.distanceSquaredTo(
+                            p) + " min: " + min);*/
             NearestPoint = findNear(firstSubtree, p, NearestPoint);
         }
-        if (secondSubtree != null && secondSubtree.rect.distanceSquaredTo(p) < min) {
+
+
+        if (secondSubtree != null && secondSubtree.rect.distanceSquaredTo(p) < p.distanceSquaredTo(
+                NearestPoint)) {
+          /*  double rectDistance = isXLevel
+                                  ? Math.pow(secondSubtree.p.x() - p.x(), 2) :
+                                  Math.pow(secondSubtree.p.y() - p.y(), 2);*/
+
+      /*      System.out.println(
+                    "checking 2subtree because rect dist is "
+                            + secondSubtree.rect.distanceSquaredTo(p) + " min: "
+                            + p.distanceSquaredTo(NearestPoint));*/
             NearestPoint = findNear(secondSubtree, p, NearestPoint);
+
+
         }
         return NearestPoint;
     }
@@ -234,10 +281,13 @@ public class KdTree {
         tree.insert(new Point2D(0.4, 0.7));
         tree.insert(new Point2D(0.9, 0.6));
 
-        for (Point2D p : tree.range(new RectHV(0, 0, 1, 1))) {
-            System.out.println(p.x() + " " + p.y());
-        }
-        Point2D p = tree.nearest(new Point2D(0.36, 0.01));
+     /*   for (Node n : tree.debug(new RectHV(0, 0, 1, 1))) {
+            System.out.println(
+                    "Point: " + n.p.x() + " " + n.p.y() + " " + "rect: " + n.rect.xmin() + " " +
+                            n.rect.ymin() + " " + n.rect.xmax() + " " + n.rect.ymax());
+        }*/
+        Point2D p = tree.nearest(new Point2D(0.37, 0.02));
         // System.out.println(p.x());
+
     }
 }
