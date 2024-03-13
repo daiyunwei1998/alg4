@@ -11,18 +11,19 @@ public class BruteCollinearPoints {
     private ArrayList<LineSegment> lines = new ArrayList<>();
 
     public BruteCollinearPoints(Point[] points)  {
-        points = points.clone();
         if (points == null) {
             throw new IllegalArgumentException("The input points array is null.");
         }
-        if (Arrays.asList(points).contains(null)) {
+        Point[] copy = points.clone();
+
+        if (Arrays.asList(copy).contains(null)) {
             throw new IllegalArgumentException("contain null in array");
         }
 
         // finds all line segments containing 4 points
-        Arrays.sort(points);
+        Arrays.sort(copy);
         Point pLast = null;
-        for (Point p:points) {
+        for (Point p:copy) {
             if (pLast == null) {
                 pLast = p;
                 continue;
@@ -33,10 +34,10 @@ public class BruteCollinearPoints {
             pLast = p;
         }
 
-        for (Point p1: points) {
+        for (Point p1: copy) {
 
 
-            for (Point p2:points) {
+            for (Point p2:copy) {
                 ArrayList<Point> recordedPoints = new ArrayList<>();
 
                 if (p2.compareTo(p1) <= 0) {
@@ -45,7 +46,7 @@ public class BruteCollinearPoints {
                 double slope = p1.slopeTo(p2);
 
 
-                for (Point pt:points) {
+                for (Point pt:copy) {
                     if (recordedPoints.contains(pt)) {
                         continue;
                     }
@@ -108,7 +109,7 @@ public class BruteCollinearPoints {
         StdDraw.show();
 
         // print and draw the line segments
-        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        BruteCollinearPoints collinear = new BruteCollinearPoints(null);
         for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();
