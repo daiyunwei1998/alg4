@@ -13,28 +13,32 @@ public class FastCollinearPoints {
         if (points == null) {
             throw new IllegalArgumentException("The input points array is null.");
         }
+        if (Arrays.asList(points).contains(null)) {
+            throw new IllegalArgumentException("contain null in array");
+        }
+
+        Point[] copy = points.clone();
+        Arrays.sort(copy);
         // finds all line segments containing 4 or more points
 
-        //for (Point p:order) {
-            //System.out.println(p);
-        //}
-        //System.out.println("=====");
+        for (Point p:copy) {
+            System.out.println(p);
+        }
+        System.out.println("=====");
 
         Point pLast = null;
-        for (Point p:points) {
+        for (Point p:copy) {
             if (pLast == null) {
                 pLast = p;
                 continue;
             }
-            if (p == null) {
-                throw new IllegalArgumentException("null point exists");
-            }
             if (p.compareTo(pLast) == 0) {
                 throw new IllegalArgumentException("duplicated point exists");
             }
+            pLast = p;
         }
-        Point[] copy = points.clone();
-        for (Point p: points) {
+
+        for (Point p: copy) {
           //System.out.println("_____");
             //System.out.println(p);
             checkSinglePoint(copy, p);
@@ -42,7 +46,7 @@ public class FastCollinearPoints {
     }
 
     private void checkSinglePoint(Point[] points, Point p) {
-
+        points = points.clone();
         Arrays.sort(points, p.slopeOrder());
         int count = 0;
         double slope = Double.NEGATIVE_INFINITY;
@@ -98,37 +102,15 @@ public class FastCollinearPoints {
     public static void main(String[] args) {
 
         // read the n points from a file
-        In in = new In("input300.txt");
-        int n = in.readInt();
-        Point[] points = new Point[n];
-        for (int i = 0; i < n; i++) {
-            int x = in.readInt();
-            int y = in.readInt();
-            points[i] = new Point(x, y);
-        }
+        //In in = new In("check.txt");
+        //int n = in.readInt();
+        Point[] points = new Point[2];
+        points[0] = new Point(1,2);
+        points[1] = null;
 
-        // draw the points
-        StdDraw.enableDoubleBuffering();
-        StdDraw.setXscale(0, 32768);
-        StdDraw.setYscale(0, 32768);
-        for (Point p : points) {
-            p.draw();
-        }
-        StdDraw.show();
 
         // print and draw the line segments
         FastCollinearPoints collinear = new FastCollinearPoints(points);
-        for (LineSegment segment : collinear.segments()) {
-            StdOut.println(segment);
-            segment.draw();
-        }
-        StdDraw.show();
-
-        // test
-        Point a = new Point(5757, 3426);
-        Point b = new Point(5757, 16647);
-        Point c = new Point(5757, 20856);
-
 
     }
 }

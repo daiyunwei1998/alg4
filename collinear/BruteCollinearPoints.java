@@ -13,6 +13,9 @@ public class BruteCollinearPoints {
         if (points == null) {
             throw new IllegalArgumentException("The input points array is null.");
         }
+        if (Arrays.asList(points).contains(null)) {
+            throw new IllegalArgumentException("contain null in array");
+        }
 
         // finds all line segments containing 4 points
         Arrays.sort(points);
@@ -22,12 +25,10 @@ public class BruteCollinearPoints {
                 pLast = p;
                 continue;
             }
-            if (p == null) {
-                throw new IllegalArgumentException("null point exists");
-            }
             if (p.compareTo(pLast) == 0) {
                 throw new IllegalArgumentException("duplicated point exists");
             }
+            pLast = p;
         }
 
         for (Point p1: points) {
