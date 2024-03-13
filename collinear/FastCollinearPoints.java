@@ -13,18 +13,20 @@ public class FastCollinearPoints {
         if (points == null) {
             throw new IllegalArgumentException("The input points array is null.");
         }
-        if (Arrays.asList(points).contains(null)) {
-            throw new IllegalArgumentException("contain null in array");
+        for (Point point:points) {
+            if (point == null) {
+                throw new IllegalArgumentException("contain null in array");
+            }
         }
 
         Point[] copy = points.clone();
         Arrays.sort(copy);
         // finds all line segments containing 4 or more points
 
-        for (Point p:copy) {
-            System.out.println(p);
-        }
-        System.out.println("=====");
+        //for (Point p:copy) {
+        //    System.out.println(p);
+        //}
+        //System.out.println("=====");
 
         Point pLast = null;
         for (Point p:copy) {
@@ -101,12 +103,12 @@ public class FastCollinearPoints {
 
     public static void main(String[] args) {
 
-        // read the n points from a file
-        //In in = new In("check.txt");
-        //int n = in.readInt();
-        Point[] points = new Point[2];
+
+        In in = new In("vertical5.txt");
+        int n = in.readInt();
+        Point[] points = new Point[1];
         points[0] = new Point(1,2);
-        points[1] = null;
+
 
 
         // print and draw the line segments

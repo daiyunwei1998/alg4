@@ -4,12 +4,14 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 
 public class BruteCollinearPoints {
     private ArrayList<LineSegment> lines = new ArrayList<>();
 
     public BruteCollinearPoints(Point[] points)  {
+        points = points.clone();
         if (points == null) {
             throw new IllegalArgumentException("The input points array is null.");
         }
@@ -32,36 +34,45 @@ public class BruteCollinearPoints {
         }
 
         for (Point p1: points) {
-            Point[] recordedPoints = new Point[4];
-            recordedPoints[0] = p1;
+
+
             for (Point p2:points) {
-                if (p2.compareTo(p1) == 0) {
+                ArrayList<Point> recordedPoints = new ArrayList<>();
+
+                if (p2.compareTo(p1) <= 0) {
                     continue;
                 }
                 double slope = p1.slopeTo(p2);
-                recordedPoints[1] = p2;
-                int count = 2;
+
 
                 for (Point pt:points) {
-                    if (pt.compareTo(p1) == 0 || pt.compareTo(p2) == 0 ) {
+                    if (recordedPoints.contains(pt)) {
                         continue;
                     }
-                    if (recordedPoints[2] != null && pt.compareTo(recordedPoints[2])== 0) {
+                    if (p1.compareTo(pt) == 0 || p2.compareTo(pt) == 0) {
                         continue;
                     }
+
                     if (p1.slopeTo(pt) == slope) {
-                        recordedPoints[count++] = pt;
-                    }
-                    if (count == 4) {
-                        break;
+                        recordedPoints.add(pt);
                     }
                 }
+                if (recordedPoints.size() >= 2) {
+                    Collections.sort(recordedPoints);
+
+
+
+                    if (p1.compareTo(recordedPoints.get(0)) < 0 && p2.compareTo(recordedPoints.get(0)) <0) {
+                        LineSegment line = new LineSegment(p1, recordedPoints.get(recordedPoints.size() - 1));
+                        lines.add(line);
+
+                    }
 
             }
-            if (recordedPoints[3] != null) {
-                LineSegment line = new LineSegment(recordedPoints[0], recordedPoints[3]);
-                lines.add(line);
+
+
             }
+
         }
     }
 
@@ -76,5 +87,32 @@ public class BruteCollinearPoints {
     }
 
     public static void main(String[] args) {
+
+        // read the n points from a file
+        In in = new In("input8.txt");
+        int n = in.readInt();
+        Point[] points = new Point[n];
+        for (int i = 0; i < n; i++) {
+            int x = in.readInt();
+            int y = in.readInt();
+            points[i] = new Point(x, y);
+        }
+
+        // draw the points
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setXscale(0, 32768);
+        StdDraw.setYscale(0, 32768);
+        for (Point p : points) {
+            p.draw();
+        }
+        StdDraw.show();
+
+        // print and draw the line segments
+        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        for (LineSegment segment : collinear.segments()) {
+            StdOut.println(segment);
+            segment.draw();
+        }
+        StdDraw.show();
     }
 }
