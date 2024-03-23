@@ -4,14 +4,20 @@ import java.util.HashSet;
 
 public class SAP {
     Digraph graph;
-    private int[][] dictTo;
+    private int[] dictToV;
+    private int[] dictToW;
+    private int[] edgeToV;
+    private int[] edgeToW;
     private int[] marked;
 
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
         this.graph = G;
-        this.dictTo = new int[this.graph.V()][this.graph.V()];
+        this.dictToV = new int[this.graph.V()];
+        this.dictToW = new int[this.graph.V()];
+        this.edgeToV = new int[this.graph.V()];
+        this.edgeToW = new int[this.graph.V()];
 
     }
 
@@ -21,7 +27,7 @@ public class SAP {
         if (ancestor == -1) {
             return -1;
         }
-        return this.dictTo[v][ancestor] + this.dictTo[w][ancestor];
+        return this.dictToV[ancestor] + this.dictToW[ancestor];
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
@@ -32,8 +38,8 @@ public class SAP {
         Queue<Integer> qV = new Queue<Integer>();
         Queue<Integer> qW = new Queue<Integer>();
 
-        dictTo[v][v] = 0;
-        dictTo[w][w] = 0;
+        dictToV[v] = 0;
+        dictToW[w] = 0;
         qV.enqueue(v);
         qW.enqueue(w);
 
@@ -43,29 +49,29 @@ public class SAP {
         while(!qV.isEmpty() || !qW.isEmpty()) {
             if (!qV.isEmpty()) {
                 int curr = qV.dequeue();
-                dictTo[v][curr] = vDist++;
+                dictToV[curr] = vDist++;
                 vMarked.add(curr);
                 if (wMarked.contains(curr)) {
                     return curr;
                 }
-                for (int other: this.graph.adj(curr)) {
-                    for (int neighbour:this.graph.adj(curr)) {
-                        qV.enqueue(neighbour);
-                    }
+
+                for (int neighbour:this.graph.adj(curr)) {
+                    qV.enqueue(neighbour);
                 }
+
             }
             if (!qW.isEmpty()) {
                 int curr = qW.dequeue();
-                dictTo[w][curr]= wDist++;
+                dictToW[curr]= wDist++;
                 wMarked.add(curr);
                 if (vMarked.contains(curr)) {
                     return curr;
                 }
-                for (int other: this.graph.adj(curr)) {
-                    for (int neighbour:this.graph.adj(curr)) {
-                        qW.enqueue(neighbour);
-                    }
+
+                for (int neighbour:this.graph.adj(curr)) {
+                    qW.enqueue(neighbour);
                 }
+
             }
         }
         return -1;
@@ -88,17 +94,22 @@ public class SAP {
         Queue<Integer> qW = new Queue<Integer>();
 
         for (int sourceV:v) {
-            dictTo[sourceV][sourceV] = 0;
+            dictToV[sourceV] = 0;
+            edgeToV[sourceV] = -1;
             vMarked.add(sourceV);
             for (int neighbourV: this.graph.adj(sourceV)) {
                 qV.enqueue(neighbourV);
+                edgeToV[neighbourV] = sourceV;
+
             }
         }
         for (int sourceW:w) {
-            dictTo[sourceW][sourceW] = 0;
-            vMarked.add(sourceW);
+            dictToW[sourceW] = 0;
+            edgeToW[sourceW] = -1;
+            wMarked.add(sourceW);
             for (int neighbourW: this.graph.adj(sourceW)) {
-                qV.enqueue(neighbourW);
+                qW.enqueue(neighbourW);
+                edgeToV[neighbourV] = sourceV;
             }
         }
         while(!qV.isEmpty() || !qW.isEmpty()) {
