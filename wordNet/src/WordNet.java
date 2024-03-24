@@ -77,57 +77,31 @@ public class WordNet {
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
+        if (word == null) {throw new IllegalArgumentException();}
         return this.synsets.containsKey(word);
     }
 
     // distance between nounA and nounB (defined below)
     public int distance(String nounA, String nounB) {
-        // TODO
-        return 0;
+        if (nounA == null || nounB == null) {throw new IllegalArgumentException();}
+        if (!isNoun(nounA) || !isNoun(nounB)) {throw new IllegalArgumentException();}
+        Bag<Integer> setA = getSynsetsID(nounA);
+        Bag<Integer> setB = getSynsetsID(nounB);
+        SAP s = new SAP(this.graph);
+        return s.length(setA, setB);
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
     // in a shortest ancestral path (defined below)
     public String sap(String nounA, String nounB) {
-        boolean[] marked = new boolean[this.idMap.size()];
-        int[] distTo = new int[this.idMap.size()];
-        Integer minDist = null;
-
-        Bag<Integer> synsetsA = getSynsetsID(nounA);
-        Bag<Integer> synsetsB = getSynsetsID(nounB);
-
-        Queue<Integer> q = new Queue<Integer>();
-
-        for (int synsetInA:synsetsA) {
-            marked[synsetInA] = true;
-            distTo[synsetInA] = 0;
-            q.enqueue(synsetInA);
-        }
-        for (int synsetInB:synsetsB) {
-            marked[synsetInB] = true;
-            distTo[synsetInB] = 0;
-            q.enqueue(synsetInB);
-        }
-
-        while (!q.isEmpty()) {
-            int v = q.dequeue();
-            for (int w : this.graph.adj(v)) {
-                if (!marked[w]) {
-                    // edgeTo[w] = v;
-                    distTo[w] = distTo[v] + 1;
-                    marked[w] = true;
-                    //TODO check dist for early stopping
-                    // TODO logic for lockstep
-                    q.enqueue(w);
-                }
-            }
-        }
-        // TODO
-        return "TODO";
+        if (nounA == null || nounB == null) {throw new IllegalArgumentException();}
+        if (!isNoun(nounA) || !isNoun(nounB)) {throw new IllegalArgumentException();}
+        SAP s = new SAP(this.graph);
+        Bag<Integer> setA = getSynsetsID(nounA);
+        Bag<Integer> setB = getSynsetsID(nounB);
+        int ancestor = s.ancestor(setA, setB);
+        return idMap.get(ancestor);
     }
-
-
-
 
 
     // do unit testing of this class
