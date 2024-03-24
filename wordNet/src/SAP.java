@@ -1,10 +1,13 @@
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.Queue;
 
 import java.util.HashSet;
 import java.util.List;
 
 public class SAP {
-    Digraph graph;
+    private Digraph graph;
     private int[] distToV;
     private int[] distToW;
     //private int[] edgeToV;

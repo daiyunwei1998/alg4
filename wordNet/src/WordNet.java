@@ -1,12 +1,12 @@
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Digraph;
-import edu.princeton.cs.algs4.Queue;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.TreeMap;
+
 
 public class WordNet {
     private HashMap<String, Bag<Integer>> synsets; // key: id, value: noun
