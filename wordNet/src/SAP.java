@@ -49,34 +49,39 @@ public class SAP {
         distToW[w] = 0;
         qV.enqueue(v);
         qW.enqueue(w);
+        vMarked.add(v);
+        wMarked.add(w);
 
-        int vDist = 0;
-        int wDist = 0;
 
         while(!qV.isEmpty() || !qW.isEmpty()) {
             if (!qV.isEmpty()) {
                 int curr = qV.dequeue();
-                distToV[curr] = vDist++;
-                vMarked.add(curr);
+
                 if (wMarked.contains(curr)) {
                     return curr;
                 }
 
                 for (int neighbour:this.graph.adj(curr)) {
-                    qV.enqueue(neighbour);
+                    if (!vMarked.contains(neighbour)) {
+                        distToV[neighbour] = distToV[curr] + 1;
+                        qV.enqueue(neighbour);
+                    }
+
                 }
 
             }
             if (!qW.isEmpty()) {
                 int curr = qW.dequeue();
-                distToW[curr]= wDist++;
-                wMarked.add(curr);
+
                 if (vMarked.contains(curr)) {
                     return curr;
                 }
 
                 for (int neighbour:this.graph.adj(curr)) {
-                    qW.enqueue(neighbour);
+                    if (wMarked.contains(neighbour)) {
+                        distToW[neighbour] = distToW[curr] + 1;
+                        qW.enqueue(neighbour);
+                    }
                 }
 
             }
@@ -176,6 +181,7 @@ public class SAP {
         while(!qV.isEmpty() || !qW.isEmpty()) {
             if (!qV.isEmpty()) {
                 int curr = qV.dequeue();
+                System.out.println(curr);
                 for (int neighbour : this.graph.adj(curr)) {
                     if (!vMarked.contains(neighbour)) {
                         vMarked.add(neighbour);
@@ -199,6 +205,7 @@ public class SAP {
                 }
                 if (!qW.isEmpty()) {
                     curr = qW.dequeue();
+                    System.out.println(curr);
                     for (int neighbour : this.graph.adj(curr)) {
                         if (!wMarked.contains(neighbour)) {
                             wMarked.add(neighbour);
@@ -234,19 +241,15 @@ public class SAP {
     }
     // do unit testing of this class
     public static void main(String[] args) {
-        In in = new In("testCase/digraph1.txt");
+        In in = new In("testCase/digraph3.txt");
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
 
-        Integer[] v = new Integer[2];
-        Integer[] w = new Integer[2];
-        v[0] = 2;
-        v[1] = 11;
-        w[0] = 5;
-        w[1] = 12;
+        int v = 6;
+        int w = 3;
 
-        int length   = sap.length(List.of(v), List.of(w));
-        int ancestor = sap.ancestor(List.of(v), List.of(w));
+        int length   = sap.length(v,w );
+        int ancestor = sap.ancestor(v, w);
         StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
         }
 
