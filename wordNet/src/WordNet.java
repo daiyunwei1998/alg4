@@ -36,14 +36,19 @@ public class WordNet {
             while ((line = reader.readLine()) != null) {
                 String[] l = line.split(",");
                 // if not already contains this word
-                if (!this.synsets.containsKey(l[1])) {
-                    this.synsets.put(l[1], new Bag<>());
-                } else {
-                    this.synsets.get(l[1]).add(Integer.parseInt(l[0]));
+                int id = Integer.parseInt(l[0]);
+                String synset = l[1];
+                for (String syn:synset.split(" ")) {
+                    if (!this.synsets.containsKey(syn)) {
+                        this.synsets.put(syn, new Bag<>());
+                    } else {
+                        this.synsets.get(syn).add(id);
+                    }
+                    if (!this.idMap.containsKey(id)) {
+                        this.idMap.put(id, syn);
+                    }
                 }
-                if (!this.idMap.containsKey(Integer.parseInt(l[0]))) {
-                    this.idMap.put(Integer.parseInt(l[0]), l[1]);
-                }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
