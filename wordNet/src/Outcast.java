@@ -25,10 +25,7 @@ public class Outcast {
     }
     public static void main(String[] args) {
         // see test client below
-        WordNet wordnet = new WordNet("testCase/synsets.txt","testCase/hypernyms.txt");
-        String nounA = "Ingmar_Bergman";
-        String nounB = "polydactyly";
-        System.out.println(wordnet.sap(nounA, nounB));
+
 
         //System.out.println(wordnet.distance(nounA, nounB));
 

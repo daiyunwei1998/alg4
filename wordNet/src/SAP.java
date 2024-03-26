@@ -31,6 +31,7 @@ public class SAP {
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
         int ancestor = ancestor(v, w);
+        //debug(); //TODO delete
         if (ancestor == -1) {
             return -1;
         }
@@ -78,7 +79,7 @@ public class SAP {
                 }
 
                 for (int neighbour:this.graph.adj(curr)) {
-                    if (wMarked.contains(neighbour)) {
+                    if (!wMarked.contains(neighbour)) {
                         distToW[neighbour] = distToW[curr] + 1;
                         qW.enqueue(neighbour);
                     }
@@ -105,7 +106,6 @@ public class SAP {
 
         int ancestor = ancestor(v,w);
         if (ancestor == -1) {return -1;}
-        //debug(); //TODO delete
         return  distToV[ancestor] + distToW[ancestor];
     }
 
@@ -181,7 +181,6 @@ public class SAP {
         while(!qV.isEmpty() || !qW.isEmpty()) {
             if (!qV.isEmpty()) {
                 int curr = qV.dequeue();
-                System.out.println(curr);
                 for (int neighbour : this.graph.adj(curr)) {
                     if (!vMarked.contains(neighbour)) {
                         vMarked.add(neighbour);
@@ -205,7 +204,6 @@ public class SAP {
                 }
                 if (!qW.isEmpty()) {
                     curr = qW.dequeue();
-                    System.out.println(curr);
                     for (int neighbour : this.graph.adj(curr)) {
                         if (!wMarked.contains(neighbour)) {
                             wMarked.add(neighbour);
@@ -241,12 +239,12 @@ public class SAP {
     }
     // do unit testing of this class
     public static void main(String[] args) {
-        In in = new In("testCase/digraph3.txt");
+        In in = new In("testCase/digraph1.txt");
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
 
-        int v = 6;
-        int w = 3;
+        int v = 3;
+        int w = 8;
 
         int length   = sap.length(v,w );
         int ancestor = sap.ancestor(v, w);

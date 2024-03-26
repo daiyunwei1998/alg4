@@ -41,6 +41,7 @@ public class WordNet {
                 for (String syn:synset.split(" ")) {
                     if (!this.synsets.containsKey(syn)) {
                         this.synsets.put(syn, new Bag<>());
+                        this.synsets.get(syn).add(id);
                     } else {
                         this.synsets.get(syn).add(id);
                     }
@@ -111,10 +112,11 @@ public class WordNet {
 
     // do unit testing of this class
     public static void main(String[] args){
-        WordNet w = new WordNet("testCase/synsets.txt","testCase/hypernyms.txt");
-        //for (String noun:w.nouns()) {
-          //  System.out.println(w.nouns());
-        //}
+        WordNet wordnet = new WordNet("testCase/synsets15.txt","testCase/hypernyms15Path.txt");
+        String nounA = "a";
+        String nounB = "a";
+
+        System.out.println(wordnet.sap(nounA, nounB));
 
     }
 }
