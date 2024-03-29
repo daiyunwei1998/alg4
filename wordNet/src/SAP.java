@@ -20,7 +20,7 @@ public class SAP {
         if (G == null) {
             throw new IllegalArgumentException("null Graph");
         }
-        this.graph = G;
+        this.graph = new Digraph(G);
         this.distToV = new int[this.graph.V()];
         this.distToW = new int[this.graph.V()];
         //this.edgeToV = new int[this.graph.V()];
@@ -30,6 +30,7 @@ public class SAP {
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
+
         int ancestor = ancestor(v, w);
         //debug(); //TODO delete
         if (ancestor == -1) {
@@ -40,6 +41,8 @@ public class SAP {
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
+        Integer minDist = null;
+        int ancestor = -1;
         HashSet<Integer> vMarked = new HashSet<>();
         HashSet<Integer> wMarked = new HashSet<>();
 
@@ -47,47 +50,62 @@ public class SAP {
         Queue<Integer> qW = new Queue<Integer>();
 
         distToV[v] = 0;
-        distToW[w] = 0;
         qV.enqueue(v);
-        qW.enqueue(w);
         vMarked.add(v);
+
+        distToW[w] = 0;
+        if (vMarked.contains(w)) {
+            return w;
+        }
+        qW.enqueue(w);
         wMarked.add(w);
 
 
         while(!qV.isEmpty() || !qW.isEmpty()) {
             if (!qV.isEmpty()) {
                 int curr = qV.dequeue();
-
-                if (wMarked.contains(curr)) {
-                    return curr;
-                }
-
                 for (int neighbour:this.graph.adj(curr)) {
                     if (!vMarked.contains(neighbour)) {
                         distToV[neighbour] = distToV[curr] + 1;
+                        if (wMarked.contains(neighbour)) {
+                            int pathDist = distToV[neighbour] + distToW[neighbour];
+                            if (minDist != null && pathDist < minDist) {
+                                ancestor = neighbour;
+                                minDist = pathDist;
+                            } else if (minDist == null) {
+                                ancestor = neighbour;
+                                minDist = pathDist;
+                            }
+                        }
                         qV.enqueue(neighbour);
+                        vMarked.add(neighbour);
                     }
-
                 }
 
             }
             if (!qW.isEmpty()) {
                 int curr = qW.dequeue();
-
-                if (vMarked.contains(curr)) {
-                    return curr;
-                }
-
                 for (int neighbour:this.graph.adj(curr)) {
                     if (!wMarked.contains(neighbour)) {
                         distToW[neighbour] = distToW[curr] + 1;
+                        if (vMarked.contains(neighbour)) {
+                            int pathDist = distToV[neighbour] + distToW[neighbour];
+                            if (minDist != null && pathDist < minDist) {
+                                ancestor = neighbour;
+                                minDist = pathDist;
+                            } else if (minDist == null) {
+                                ancestor = neighbour;
+                                minDist = pathDist;
+                            }
+                        }
                         qW.enqueue(neighbour);
+                        wMarked.add(neighbour);
                     }
                 }
 
             }
         }
-        return -1;
+        return ancestor;
     }
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
@@ -133,7 +151,6 @@ public class SAP {
 
         for (int sourceV:v) {
             distToV[sourceV] = 0;
-            //edgeToV[sourceV] = -1;
             vMarked.add(sourceV);
             for (int neighbourV: this.graph.adj(sourceV)) {
 
@@ -185,9 +202,10 @@ public class SAP {
                     if (!vMarked.contains(neighbour)) {
                         vMarked.add(neighbour);
                         distToV[neighbour] = distToV[curr] + 1;
-                        if (distToV[neighbour] < minDist) {
+                        if (minDist != null && distToV[neighbour] < minDist) {
                             qV.enqueue(neighbour);
                         }
+
                         if (wMarked.contains(neighbour)) {
                             // first time meeting at this point
                             int pathDist = distToV[neighbour] + distToW[neighbour];
@@ -208,7 +226,7 @@ public class SAP {
                         if (!wMarked.contains(neighbour)) {
                             wMarked.add(neighbour);
                             distToW[neighbour] = distToW[curr] + 1;
-                            if (distToW[neighbour] < minDist) {
+                            if (minDist != null &&  distToW[neighbour] < minDist) {
                                 qW.enqueue(neighbour);
                             }
                             if (vMarked.contains(neighbour)) {
@@ -239,12 +257,14 @@ public class SAP {
     }
     // do unit testing of this class
     public static void main(String[] args) {
-        In in = new In("testCase/digraph1.txt");
+        In in = new In("testCase/digraph-wordnet.txt");
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
 
-        int v = 3;
-        int w = 8;
+        HashSet<Integer> v = new HashSet<>();
+        HashSet<Integer> w = new HashSet<>();
+        v.add(58962);
+        w.add(27758);
 
         int length   = sap.length(v,w );
         int ancestor = sap.ancestor(v, w);
