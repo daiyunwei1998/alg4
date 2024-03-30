@@ -3,6 +3,7 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Queue;
 
+
 import java.util.HashSet;
 import java.util.List;
 
@@ -28,19 +29,28 @@ public class SAP {
 
     }
 
+
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-
         int ancestor = ancestor(v, w);
-        //debug(); //TODO delete
         if (ancestor == -1) {
             return -1;
         }
         return this.distToV[ancestor] + this.distToW[ancestor];
     }
+    private void validateInput(Integer vertex) {
+        if (vertex == null) {
+            throw new IllegalArgumentException("null input vertex");
+        }
+        if (vertex < 0 || vertex >this.graph.V() - 1) {
+            throw new IllegalArgumentException();
+        }
 
+    }
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
+        validateInput(v);
+        validateInput(w);
         Integer minDist = null;
         int ancestor = -1;
         HashSet<Integer> vMarked = new HashSet<>();
@@ -110,18 +120,6 @@ public class SAP {
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        // check corner cases
-        for (Integer i:v) {
-            if (i == null) {
-                throw new IllegalArgumentException();
-            }
-        }
-        for (Integer i:w) {
-            if (i == null) {
-                throw new IllegalArgumentException();
-            }
-        }
-
         int ancestor = ancestor(v,w);
         if (ancestor == -1) {return -1;}
         return  distToV[ancestor] + distToW[ancestor];
@@ -129,16 +127,15 @@ public class SAP {
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        if (v==null || w == null) {
+            throw new IllegalArgumentException();
+        }
         // check corner cases
         for (Integer i:v) {
-            if (i == null) {
-                throw new IllegalArgumentException();
-            }
+            validateInput(i);
         }
         for (Integer i:w) {
-            if (i == null) {
-                throw new IllegalArgumentException();
-            }
+            validateInput(i);
         }
 
         Integer minDist = null;
@@ -152,47 +149,16 @@ public class SAP {
         for (int sourceV:v) {
             distToV[sourceV] = 0;
             vMarked.add(sourceV);
-            for (int neighbourV: this.graph.adj(sourceV)) {
-
-                //edgeToV[neighbourV] = sourceV;
-                vMarked.add(neighbourV);
-                distToV[neighbourV] = distToV[sourceV] + 1;
-                qV.enqueue(neighbourV);
-                if (wMarked.contains(neighbourV)) {
-                    // first time meeting at this point
-                    int pathDist = distToV[neighbourV] + distToW[neighbourV];
-                    if (minDist != null && pathDist < minDist) {
-                        ancestor = neighbourV;
-                        minDist = pathDist;
-                    } else if (minDist == null) {
-                        ancestor = neighbourV;
-                        minDist = pathDist;
-                    }
-                }
-            }
+            qV.enqueue(sourceV);
         }
+
         for (int sourceW:w) {
             distToW[sourceW] = 0;
-            //edgeToW[sourceW] = -1;
-            wMarked.add(sourceW);
-            for (int neighbourW: this.graph.adj(sourceW)) {
-                qW.enqueue(neighbourW);
-                //edgeToV[neighbourW] = sourceW;
-                wMarked.add(neighbourW);
-                distToW[neighbourW] = distToW[sourceW] + 1;
-                if (vMarked.contains(neighbourW)) {
-                    // first time meeting at this point
-                    int pathDist = distToV[neighbourW] + distToW[neighbourW];
-                    if (minDist != null && pathDist < minDist) {
-                        ancestor = neighbourW;
-                        minDist = pathDist;
-                    } else if (minDist == null) {
-                        ancestor = neighbourW;
-                        minDist = pathDist;
-                    }
-                }
+            if (vMarked.contains(sourceW)) {
+                return sourceW;
             }
-
+            wMarked.add(sourceW);
+            qW.enqueue(sourceW);
         }
 
         while(!qV.isEmpty() || !qW.isEmpty()) {
@@ -200,11 +166,12 @@ public class SAP {
                 int curr = qV.dequeue();
                 for (int neighbour : this.graph.adj(curr)) {
                     if (!vMarked.contains(neighbour)) {
-                        vMarked.add(neighbour);
                         distToV[neighbour] = distToV[curr] + 1;
-                        if (minDist != null && distToV[neighbour] < minDist) {
+                        if (minDist == null || distToV[neighbour] < minDist) {
                             qV.enqueue(neighbour);
+                            vMarked.add(neighbour);
                         }
+
 
                         if (wMarked.contains(neighbour)) {
                             // first time meeting at this point
@@ -220,25 +187,27 @@ public class SAP {
                     }
 
                 }
-                if (!qW.isEmpty()) {
-                    curr = qW.dequeue();
-                    for (int neighbour : this.graph.adj(curr)) {
-                        if (!wMarked.contains(neighbour)) {
+
+            }
+            if (!qW.isEmpty()) {
+                int curr = qW.dequeue();
+                for (int neighbour : this.graph.adj(curr)) {
+                    if (!wMarked.contains(neighbour)) {
+                        distToW[neighbour] = distToW[curr] + 1;
+                        if (minDist == null || distToW[neighbour] < minDist) {
+                            qW.enqueue(neighbour);
                             wMarked.add(neighbour);
-                            distToW[neighbour] = distToW[curr] + 1;
-                            if (minDist != null &&  distToW[neighbour] < minDist) {
-                                qW.enqueue(neighbour);
-                            }
-                            if (vMarked.contains(neighbour)) {
-                                // first time meeting at this point
-                                int pathDist = distToV[neighbour] + distToW[neighbour];
-                                if (minDist != null && pathDist < minDist) {
-                                    ancestor = neighbour;
-                                    minDist = pathDist;
-                                } else if (minDist == null) {
-                                    ancestor = neighbour;
-                                    minDist = pathDist;
-                                }
+                        }
+
+                        if (vMarked.contains(neighbour)) {
+                            // first time meeting at this point
+                            int pathDist = distToV[neighbour] + distToW[neighbour];
+                            if (minDist != null && pathDist < minDist) {
+                                ancestor = neighbour;
+                                minDist = pathDist;
+                            } else if (minDist == null) {
+                                ancestor = neighbour;
+                                minDist = pathDist;
                             }
                         }
                     }
@@ -257,17 +226,30 @@ public class SAP {
     }
     // do unit testing of this class
     public static void main(String[] args) {
-        In in = new In("testCase/digraph-wordnet.txt");
+        In in = new In("testCase/digraph1.txt");
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
 
+        // Create HashSet v and populate it with the given values
         HashSet<Integer> v = new HashSet<>();
-        HashSet<Integer> w = new HashSet<>();
-        v.add(58962);
-        w.add(27758);
+        v.add(0);
+        v.add(7);
+        v.add(9);
+        v.add(12);
 
-        int length   = sap.length(v,w );
-        int ancestor = sap.ancestor(v, w);
+        // Create HashSet w and populate it with the given values
+        HashSet<Integer> w = new HashSet<>();
+        w.add(1);
+        w.add(2);
+        w.add(4);
+        w.add(5);
+        w.add(12);
+        w.add(10);
+
+
+        int length   = sap.length(v,w);
+        //int ancestor = sap.ancestor(v,w);
+        int ancestor = 0;
         StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
         }
 

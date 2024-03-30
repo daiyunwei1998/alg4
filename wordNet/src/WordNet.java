@@ -1,10 +1,7 @@
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Digraph;
-
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Topological;
 import java.util.HashMap;
 
 
@@ -12,6 +9,7 @@ public class WordNet {
     private HashMap<String, Bag<Integer>> synsets; // key: id, value: noun
     private HashMap<Integer, String> idMap; // key: id, value: noun
     private Digraph graph;
+    private SAP s;
 
     private Bag<Integer> getSynsetsID(String noun) {
         return this.synsets.get(noun);
@@ -26,50 +24,69 @@ public class WordNet {
         }
         readSynsets(synsets);
         this.graph = new Digraph(this.idMap.size());
-        //addHypernyms(hypernyms);
+        addHypernyms(hypernyms);
+        checkGraph();
+        this.s = new SAP(this.graph);
+    }
+    private void checkGraph() {
+        // check if graph is a rooted DAG
+        Topological t = new Topological(this.graph);
+        if (!t.hasOrder()) {
+            throw new IllegalArgumentException("not a DAG");
+        }
+        int count = 0;
+        for (int v = 0; v < this.graph.V(); v++) {
+            if (this.graph.outdegree(v) == 0) {
+                count += 1;
+            }
+            if (count > 1) {
+                throw new IllegalArgumentException("more than one root");
+            }
+        }
+
+
     }
     private void readSynsets(String synsets) {
         this.synsets =  new HashMap<>();
         this.idMap = new HashMap<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(synsets))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] l = line.split(",");
-                // if not already contains this word
-                int id = Integer.parseInt(l[0]);
-                String synset = l[1];
-                for (String syn:synset.split(" ")) {
-                    if (!this.synsets.containsKey(syn)) {
-                        this.synsets.put(syn, new Bag<>());
-                        this.synsets.get(syn).add(id);
-                    } else {
-                        this.synsets.get(syn).add(id);
-                    }
-                    if (!this.idMap.containsKey(id)) {
-                        this.idMap.put(id, syn);
-                    }
-                }
 
+        In synsetsIn = new In(synsets);
+
+        String line;
+        while ((line = synsetsIn.readLine()) != null) {
+            String[] l = line.split(",");
+            // if not already contains this word
+            int id = Integer.parseInt(l[0]);
+            String synset = l[1];
+           for (String syn:synset.split(" ")) {
+                if (!this.synsets.containsKey(syn)) {
+                    this.synsets.put(syn, new Bag<>());
+                    this.synsets.get(syn).add(id);
+                } else {
+                    this.synsets.get(syn).add(id);
+                }
+                if (!this.idMap.containsKey(id)) {
+                    this.idMap.put(id, synset);
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+
         }
     }
 
     private void addHypernyms(String hypernyms) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(hypernyms))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] l = line.split(",");
-                int idx = Integer.parseInt(l[0]);
-                for (int i = 1; i < l.length; i++) {
-                    String item = l[i];
-                    this.graph.addEdge(idx, Integer.parseInt(item));
-                }
+        In hypernymsIn = new In(hypernyms);
+
+        String line;
+        while ((line = hypernymsIn.readLine()) != null) {
+            String[] l = line.split(",");
+            int idx = Integer.parseInt(l[0]);
+            for (int i = 1; i < l.length; i++) {
+                String item = l[i];
+                this.graph.addEdge(idx, Integer.parseInt(item));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
 
@@ -93,8 +110,8 @@ public class WordNet {
         if (!isNoun(nounA) || !isNoun(nounB)) {throw new IllegalArgumentException();}
         Bag<Integer> setA = getSynsetsID(nounA);
         Bag<Integer> setB = getSynsetsID(nounB);
-        SAP s = new SAP(this.graph);
-        return s.length(setA, setB);
+
+        return this.s.length(setA, setB);
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
@@ -102,7 +119,6 @@ public class WordNet {
     public String sap(String nounA, String nounB) {
         if (nounA == null || nounB == null) {throw new IllegalArgumentException();}
         if (!isNoun(nounA) || !isNoun(nounB)) {throw new IllegalArgumentException();}
-        SAP s = new SAP(this.graph);
         Bag<Integer> setA = getSynsetsID(nounA);
         Bag<Integer> setB = getSynsetsID(nounB);
         int ancestor = s.ancestor(setA, setB);
@@ -112,11 +128,8 @@ public class WordNet {
 
     // do unit testing of this class
     public static void main(String[] args){
-        WordNet wordnet = new WordNet("testCase/synsets15.txt","testCase/hypernyms15Path.txt");
-        String nounA = "a";
-        String nounB = "a";
+        WordNet wn = new WordNet("testCase/synsets3.txt","testCase/hypernyms3InvalidTwoRoots.txt");
 
-        System.out.println(wordnet.sap(nounA, nounB));
 
     }
 }
