@@ -22,7 +22,7 @@ public class BaseballElimination {
     private HashMap<String, Integer> left;
     private int[][] g;
     private HashMap<String, HashSet<String>> certificates;
-
+    private HashMap<String, HashMap<String, Integer>> allVerticesMap;
 
     public BaseballElimination(String filename) {
         // create a baseball division from given filename in format specified below
@@ -35,6 +35,7 @@ public class BaseballElimination {
         this.left = new HashMap<>();
         this.g = new int[this.numberOfTeams][this.numberOfTeams];
         this.certificates = new HashMap<>();
+        this.allVerticesMap = new HashMap<>();
         int index = 0;
         while (file.hasNextLine()) {
             String[] lineElements = file.readLine().split("\\s+");
@@ -84,6 +85,7 @@ public class BaseballElimination {
         return this.g[this.index.get(team1)][this.index.get(team2)];
     }
 
+
     public boolean isEliminated(String team) {
         // is given team eliminated?
         // Trivial elimination
@@ -100,14 +102,19 @@ public class BaseballElimination {
 
         // check if all edges are saturated
         for (FlowEdge edge : flow.adj(0)) {
+
             if (edge.capacity() > edge.flow()) {
-                // add to certificates as cache
+                // System.out.println(edge.from() + "->" + edge.to());
                 HashSet<String> output = new HashSet<>();
                 for (String t : this.teams()) {
-                    int v = this.index.get(t);
-                    if (ff.inCut(v)) {
-                        output.add(this.indexToTeam.get(v));
+                    if (t != team) {
+                        HashMap<String, Integer> verticesMap = this.allVerticesMap.get(team);
+                        int v = verticesMap.get(Integer.toString(this.index.get(t)));
+                        if (ff.inCut(v)) {
+                            output.add(t);
+                        }
                     }
+
                 }
                 this.certificates.put(team, output);
                 return true; // any edge not saturated
@@ -126,24 +133,24 @@ public class BaseballElimination {
         HashMap<String, Integer> verticesMap = new HashMap<>();
         int currCount = 0;
         verticesMap.put("s", currCount++);
-        int numberOfGames = (1 + Combination.combination(this.numberOfTeams - 1, 2)
-                + this.numberOfTeams) / 2;
+        // int numberOfGames = (1 + Combination.combination(this.numberOfTeams - 1, 2) + this.numberOfTeams) / 2;
         // game vertices
-        for (int i = 0; i < this.numberOfTeams - 1; i++) {
-            for (int j = i + 1; j < this.numberOfTeams - 1; j++) {
+        for (int i = 0; i < this.numberOfTeams; i++) {
+            for (int j = i + 1; j < this.numberOfTeams; j++) {
                 if (i != this.index.get(team) & j != this.index.get(team)) {
                     verticesMap.put(Integer.toString(i) + "-" + Integer.toString(j), currCount++);
                 }
             }
         }
         // team vertices
-        for (int i = 0; i < this.numberOfTeams - 1; i++) {
+        for (int i = 0; i < this.numberOfTeams; i++) {
             if (i != this.index.get(team)) {
                 verticesMap.put(Integer.toString(i), currCount++);
             }
         }
         // t vertex
         verticesMap.put("t", currCount);
+        this.allVerticesMap.put(team, verticesMap);
 
        /* for (String key : verticesMap.keySet()) {
             System.out.println(key + " => " + Integer.toString(verticesMap.get(key)));
@@ -171,11 +178,11 @@ public class BaseballElimination {
                 if (i != this.index.get(team) & j != this.index.get(team)) {
                     FlowEdge e1 = new FlowEdge(
                             verticesMap.get(Integer.toString(i) + "-" + Integer.toString(j)),
-                            i, Double.POSITIVE_INFINITY);
+                            verticesMap.get(Integer.toString(i)), Double.POSITIVE_INFINITY);
                     graph.addEdge(e1);
                     FlowEdge e2 = new FlowEdge(
                             verticesMap.get(Integer.toString(i) + "-" + Integer.toString(j)),
-                            j, Double.POSITIVE_INFINITY);
+                            verticesMap.get(Integer.toString(j)), Double.POSITIVE_INFINITY);
                     graph.addEdge(e2);
                 }
             }
@@ -193,7 +200,7 @@ public class BaseballElimination {
             }
 
         }
-
+        // System.out.println(graph.toString());
         return graph;
     }
 
