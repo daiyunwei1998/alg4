@@ -8,7 +8,6 @@ import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdOut;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +37,7 @@ public class BaseballElimination {
         this.allVerticesMap = new HashMap<>();
         int index = 0;
         while (file.hasNextLine()) {
-            String[] lineElements = file.readLine().split("\\s+");
+            String[] lineElements = file.readLine().trim().split("\\s+");
             String team = lineElements[0];
             this.index.put(team, index);
             this.indexToTeam.put(index, team);
@@ -65,32 +64,47 @@ public class BaseballElimination {
         return this.wins.keySet();
     }
 
+    private void validateTeam(String team) {
+        if (!this.wins.keySet().contains(team)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
     public int wins(String team) {
         // number of wins for given team
+        validateTeam(team);
         return this.wins.get(team);
     }
 
     public int losses(String team) {
         // number of losses for given team
+        validateTeam(team);
         return this.losses.get(team);
     }
 
     public int remaining(String team) {
         // number of remaining games for given team
+        validateTeam(team);
         return this.left.get(team);
     }
 
     public int against(String team1, String team2) {
         // number of remaining games between team1 and team2
+        validateTeam(team1);
+        validateTeam(team2);
         return this.g[this.index.get(team1)][this.index.get(team2)];
     }
 
 
     public boolean isEliminated(String team) {
         // is given team eliminated?
+        validateTeam(team);
         // Trivial elimination
         for (String otherTeam : this.teams()) {
             if (this.wins(team) + this.remaining(team) < this.wins(otherTeam)) {
+                HashSet<String> output = new HashSet<>();
+                output.add(otherTeam);
+                this.certificates.put(team, output);
                 return true;
             }
         }
@@ -107,7 +121,7 @@ public class BaseballElimination {
                 // System.out.println(edge.from() + "->" + edge.to());
                 HashSet<String> output = new HashSet<>();
                 for (String t : this.teams()) {
-                    if (t != team) {
+                    if (!t.equals(team)) {
                         HashMap<String, Integer> verticesMap = this.allVerticesMap.get(team);
                         int v = verticesMap.get(Integer.toString(this.index.get(t)));
                         if (ff.inCut(v)) {
@@ -125,11 +139,14 @@ public class BaseballElimination {
 
     public Iterable<String> certificateOfElimination(String team) {
         // subset R of teams that eliminates given team; null if not eliminated
+        validateTeam(team);
+        isEliminated(team);
         return this.certificates.get(team);
     }
 
-    public FlowNetwork formulationGraph(String team) {
+    private FlowNetwork formulationGraph(String team) {
         // Setting up vertices label to index mapping
+        validateTeam(team);
         HashMap<String, Integer> verticesMap = new HashMap<>();
         int currCount = 0;
         verticesMap.put("s", currCount++);
@@ -137,7 +154,7 @@ public class BaseballElimination {
         // game vertices
         for (int i = 0; i < this.numberOfTeams; i++) {
             for (int j = i + 1; j < this.numberOfTeams; j++) {
-                if (i != this.index.get(team) & j != this.index.get(team)) {
+                if (i != this.index.get(team) && j != this.index.get(team)) {
                     verticesMap.put(Integer.toString(i) + "-" + Integer.toString(j), currCount++);
                 }
             }
@@ -161,20 +178,25 @@ public class BaseballElimination {
         FlowNetwork graph = new FlowNetwork(verticesMap.size());
 
         // weight g12 = games left between 1 and 2
-        for (int i = 0; i < this.numberOfTeams - 1; i++) {
-            for (int j = i + 1; j < this.numberOfTeams - 1; j++) {
-                if (i != this.index.get(team) & j != this.index.get(team)) {
+        // System.out.println(team + " ->this team has index of " + this.index.get(team));
+        for (int i = 0; i < this.numberOfTeams; i++) {
+            for (int j = i + 1; j < this.numberOfTeams; j++) {
+                // System.out.println("i = " + i + " j = " + j);
+                if (i != this.index.get(team) && j != this.index.get(team)) {
                     int weight = this.g[i][j];
                     FlowEdge e = new FlowEdge(0, verticesMap.get(
                             Integer.toString(i) + "-" + Integer.toString(j)), weight);
+                /*    System.out.println("adding edge " + verticesMap.get(
+                            Integer.toString(i) + "-" + Integer.toString(j)) + " i: " + i + " j: "
+                                               + j);*/
                     graph.addEdge(e);
                 }
             }
         }
-
+        // System.out.println(Arrays.deepToString(g));
         // weighted edge betwwen game vertices and team vertices
-        for (int i = 0; i < this.numberOfTeams - 1; i++) {
-            for (int j = i + 1; j < this.numberOfTeams - 1; j++) {
+        for (int i = 0; i < this.numberOfTeams; i++) {
+            for (int j = i + 1; j < this.numberOfTeams; j++) {
                 if (i != this.index.get(team) & j != this.index.get(team)) {
                     FlowEdge e1 = new FlowEdge(
                             verticesMap.get(Integer.toString(i) + "-" + Integer.toString(j)),
@@ -189,7 +211,7 @@ public class BaseballElimination {
         }
 
         // weighted edge between team and t
-        for (int i = 0; i < this.numberOfTeams - 1; i++) {
+        for (int i = 0; i < this.numberOfTeams; i++) {
             if (i != this.index.get(team)) {
                 int weight = this.wins(team) + this.remaining(team) - this.wins(
                         this.indexToTeam.get(i));
@@ -200,25 +222,18 @@ public class BaseballElimination {
             }
 
         }
-        // System.out.println(graph.toString());
+        // System.out.println(graph.toString()); // debug only
+        // System.out.println(this.index.toString());
         return graph;
     }
 
 
     public static void main(String[] args) {
-        BaseballElimination division = new BaseballElimination("teams5.txt");
-        for (String team : division.teams()) {
-            if (division.isEliminated(team)) {
-                StdOut.print(team + " is eliminated by the subset R = { ");
-                for (String t : division.certificateOfElimination(team)) {
-                    StdOut.print(t + " ");
-                }
-                StdOut.println("}");
-            }
-            else {
-                StdOut.println(team + " is not eliminated");
-            }
-        }
+        BaseballElimination division = new BaseballElimination("teams4.txt");
+        String team = "Montreal";
+        System.out.println(team + "-> " + division.isEliminated(team));
+        System.out.println(division.certificates.toString());
+
 
     }
 }
