@@ -7,6 +7,7 @@
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class BoggleSolver {
@@ -103,10 +104,10 @@ public class BoggleSolver {
         private HashSet<String> allStrings;
         private MatchaTries dict;
         private MatchaTries allStringsTrie;
-        private Bag<Integer>[][] adjCache;
+        private ArrayList<ArrayList<int[]>> adjCache;
 
         private Iterable<int[]> adj(int row, int col) {
-            Bag<int[]> output = new Bag<>();
+            ArrayList<int[]> output = new ArrayList<>();
             Bag<Integer> rows = new Bag<>();
             Bag<Integer> cols = new Bag<>();
 
@@ -144,10 +145,10 @@ public class BoggleSolver {
             this.allStrings = new HashSet<>();
             this.allStringsTrie = new MatchaTries();
             this.dict = dict;
-            this.adjCache = (Bag<Integer>[][]) new Bag[nRows][nCols];
+            this.adjCache = new ArrayList<ArrayList<int[]>>();
             for (int sRow = 0; sRow < this.nRows; sRow++) {
                 for (int sCol = 0; sCol < this.nCols; sCol++) {
-                    this.adjCache[sRow][sCol] = (Bag) adj(sRow, sCol);
+                    this.adjCache.add((ArrayList<int[]>) adj(sRow, sCol));
                 }
             }
             for (int sRow = 0; sRow < this.nRows; sRow++) {
@@ -185,7 +186,7 @@ public class BoggleSolver {
                 return;
             }
 
-            for (int[] point : adj(row, col)) {
+            for (int[] point : adjCache.get(row * nCols + col)) {
                 if (!marked[point[0]][point[1]]) {
                     search(currentString, point[0], point[1], node);
                 }
