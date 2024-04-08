@@ -144,8 +144,15 @@ public class BoggleSolver {
 
         private void search(String currentString, int row, int col) {
             this.marked[row][col] = true;
-            currentString += this.graph.getLetter(row, col);
-            System.out.println("current:" + currentString);
+            char newLetter = this.graph.getLetter(row, col);
+            if (newLetter == 'Q') {
+                currentString += "QU";
+            }
+            else {
+                currentString += newLetter;
+            }
+
+            // System.out.println("current:" + currentString);
             if (!this.dict.startsWith(currentString)) {
                 // go no further
                 this.marked[row][col] = false;
@@ -158,8 +165,8 @@ public class BoggleSolver {
                 }
             }
             this.marked[row][col] = false;
-            if (this.dict.contains(currentString) && !this.allStringsTrie.startsWith(
-                    currentString)) {
+            if (currentString.length() > 2 && this.dict.contains(currentString)) {
+
                 this.allStrings.add(currentString);
                 this.allStringsTrie.add(currentString);
             }
@@ -184,21 +191,23 @@ public class BoggleSolver {
         if (!this.dict.contains(word)) {
             return 0;
         }
-        else {
-            return word.length() - countOccurrences(word, "qu");
+        int length = word.length();
+        if (length == 3 | length == 4) {
+            return 1;
         }
-    }
-
-    private static int countOccurrences(String input, String pattern) {
-        int count = 0;
-        int index = input.indexOf(pattern);
-
-        while (index != -1) {
-            count++;
-            index = input.indexOf(pattern, index + 1);
+        if (length == 5) {
+            return 2;
         }
-
-        return count;
+        if (length == 6) {
+            return 3;
+        }
+        if (length == 7) {
+            return 5;
+        }
+        if (length >= 8) {
+            return 11;
+        }
+        return 0;
     }
 
 
@@ -206,7 +215,7 @@ public class BoggleSolver {
         In in = new In("dictionary-algs4.txt");
         String[] dictionary = in.readAllStrings();
         BoggleSolver solver = new BoggleSolver(dictionary);
-        BoggleBoard board = new BoggleBoard("board4x4.txt");
+        BoggleBoard board = new BoggleBoard("board-q.txt");
         int size = 0;
         for (String s : solver.getAllValidWords(board)) {
             System.out.println(s);
