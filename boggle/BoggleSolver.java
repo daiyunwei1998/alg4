@@ -4,6 +4,7 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
 
 import java.util.HashSet;
@@ -27,13 +28,21 @@ public class BoggleSolver {
         private static final int R = 26;
         private Node root = new Node();
 
-        private class Node {
+        public class Node {
             private Node[] next;
             private boolean isEnd;
 
             private Node() {
                 next = new Node[R];
                 isEnd = false;
+            }
+
+            public Node getNext(char c) {
+                return next[c - 'A'];
+            }
+
+            public boolean isEnd() {
+                return isEnd;
             }
         }
 
@@ -76,7 +85,7 @@ public class BoggleSolver {
         }
 
 
-        private Node get(Node x, String key, int d) {
+        public Node get(Node x, String key, int d) {
             if (x == null)
                 return null;
             if (d == key.length())
@@ -94,11 +103,12 @@ public class BoggleSolver {
         private HashSet<String> allStrings;
         private MatchaTries dict;
         private MatchaTries allStringsTrie;
+        private Bag<Integer>[][] adjCache;
 
         private Iterable<int[]> adj(int row, int col) {
-            HashSet<int[]> output = new HashSet<>();
-            HashSet<Integer> rows = new HashSet<>();
-            HashSet<Integer> cols = new HashSet<>();
+            Bag<int[]> output = new Bag<>();
+            Bag<Integer> rows = new Bag<>();
+            Bag<Integer> cols = new Bag<>();
 
             if (row - 1 >= 0) {
                 rows.add(row - 1);
@@ -134,26 +144,42 @@ public class BoggleSolver {
             this.allStrings = new HashSet<>();
             this.allStringsTrie = new MatchaTries();
             this.dict = dict;
+            this.adjCache = (Bag<Integer>[][]) new Bag[nRows][nCols];
             for (int sRow = 0; sRow < this.nRows; sRow++) {
                 for (int sCol = 0; sCol < this.nCols; sCol++) {
-                    search("", sRow, sCol);
+                    this.adjCache[sRow][sCol] = (Bag) adj(sRow, sCol);
+                }
+            }
+            for (int sRow = 0; sRow < this.nRows; sRow++) {
+                for (int sCol = 0; sCol < this.nCols; sCol++) {
+                    search("", sRow, sCol, dict.root);
                 }
             }
 
         }
 
-        private void search(String currentString, int row, int col) {
+        private void search(String currentString, int row, int col, MatchaTries.Node node) {
             this.marked[row][col] = true;
             char newLetter = this.graph.getLetter(row, col);
             if (newLetter == 'Q') {
                 currentString += "QU";
+                node = node.getNext('Q');
+                if (node == null) {
+                    this.marked[row][col] = false;
+                    return;
+                }
+                else {
+                    node = node.getNext('U');
+                }
+
             }
             else {
                 currentString += newLetter;
+                node = node.getNext(newLetter);
             }
 
             // System.out.println("current:" + currentString);
-            if (!this.dict.startsWith(currentString)) {
+            if (node == null) {
                 // go no further
                 this.marked[row][col] = false;
                 return;
@@ -161,12 +187,11 @@ public class BoggleSolver {
 
             for (int[] point : adj(row, col)) {
                 if (!marked[point[0]][point[1]]) {
-                    search(currentString, point[0], point[1]);
+                    search(currentString, point[0], point[1], node);
                 }
             }
             this.marked[row][col] = false;
-            if (currentString.length() > 2 && this.dict.contains(currentString)) {
-
+            if (currentString.length() > 2 && node.isEnd()) {
                 this.allStrings.add(currentString);
                 this.allStringsTrie.add(currentString);
             }
